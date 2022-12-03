@@ -54,7 +54,7 @@ class AuthController {
             return;
         }
         try {
-            const job = new CronJob(new Date(Date.now() + 60 *1e3), async (): Promise<void> => {
+            const job = new CronJob(new Date(Date.now() + 60 * 60 * 1e3), async (): Promise<void> => {
                 try {
                     const codeRow: Codes | null = await codesRepository.findOne({ where: { registerCode: verificationCode } });
                     if (codeRow) {
@@ -136,10 +136,16 @@ class AuthController {
             return;
         }
         try {
-            const job = new CronJob(new Date(Date.now() + 24 * 60 * 60 * 1e3), async () => {
+            const dayJob = new CronJob(new Date(Date.now() + 24 * 60 * 60 * 1e3), async () => {
                 await tokensRepository.delete({ token: token });
             });
-            job.start();
+            dayJob.start();
+            const minuteJob = new CronJob(new Date(Date.now() + 60 * 60 * 1e3), async () => {
+                if ((await tokensRepository.findOne({ where: { token: token }}))?.loginCode) {
+                    await tokensRepository.delete({ token: token });
+                }
+            });
+            minuteJob.start();
             const userRow: User | null = await userRepository.findOne({ where: { email: req.body.email } });
             await tokensRepository.save({ loginCode: verificationCode, token: token, userId: userRow?.id });
             res.send({ ok: true })
