@@ -1,6 +1,6 @@
 <script>
     (async() => {
-        const answer = await fetch(`/get-login-token?code=${new URLSearchParams(location.search).get("code")}`).then(res => res.json());
-    if (answer.token) localStorage.setItem("token", answer.token);
+        const answer = await fetch(`/get-auth-token?code=${new URLSearchParams(location.search).get("code")}`).then(res => res.json());
+    if (answer.token) localStorage.setItem("auth_token", answer.token);
     })();
 </script>

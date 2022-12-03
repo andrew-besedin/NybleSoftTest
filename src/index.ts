@@ -158,7 +158,7 @@ app.get("/verify-login", async (req: Request, res: Response): Promise<void> => {
     res.sendFile(__dirname + "/assets/verify-login.html");
 });
 
-app.get("/get-login-token", async(req: Request, res: Response): Promise<void> => {
+app.get("/get-auth-token", async(req: Request, res: Response): Promise<void> => {
     try {
         const tokenRow: Tokens | null = await tokensRepository.findOne({ where: { loginCode: req.query.code?.toString() } });
         if (!tokenRow) {
@@ -167,6 +167,26 @@ app.get("/get-login-token", async(req: Request, res: Response): Promise<void> =>
         }
         res.send({ ok: true, token: tokenRow.token });
         await tokensRepository.save({ id: tokenRow.id, loginCode: "" });
+    } catch(err: any) {
+        fs.appendFileSync("./error.txt", err.toString() + "\r\n");
+        res.send({ ok: false, message: "dbError" });
+        return;
+    }
+});
+
+app.post("/get-user-info", async (req: Request, res: Response): Promise<void> => {
+    if (!req.body.token) {
+        res.send({ ok: false, message: "invalidInput" });
+        return;
+    }
+    try {
+        const tokenRow: Tokens | null = await tokensRepository.findOne({ where: { token: req.body.token } });
+        if (!tokenRow) {
+            res.send({ ok: false, message: "invalidToken" });
+            return;
+        }
+        const userRow: User | null = await userRepository.findOne({ where: {id: tokenRow!.userId} });
+        res.send({ ok: true, data: { firstName: userRow!.firstName, lastName: userRow!.lastName, email: userRow!.email } });
     } catch(err: any) {
         fs.appendFileSync("./error.txt", err.toString() + "\r\n");
         res.send({ ok: false, message: "dbError" });
