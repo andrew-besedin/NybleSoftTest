@@ -1,9 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from "typeorm";
+import Codes from "./codes-entity";
 
 @Entity()
-export default class UsersInfo {
-    @PrimaryGeneratedColumn()
-    id: number
+export default class User {
+    @PrimaryGeneratedColumn({ type: "bigint" })
+    id: string
 
     @Column()
     firstName: string
@@ -16,4 +17,11 @@ export default class UsersInfo {
 
     @Column({ nullable: true })
     image: string
+
+    @OneToOne(() => Codes)
+    @JoinColumn()
+    codes: Codes
+
+    @Column({ nullable: true })
+    codesId: string
 }
