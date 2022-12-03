@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany } from "typeorm";
 import Codes from "./codes-entity";
+import Tokens from "./tokens-entity";
 
 @Entity()
 export default class User {
@@ -21,6 +22,9 @@ export default class User {
     @OneToOne(() => Codes)
     @JoinColumn()
     codes: Codes
+
+    @OneToMany(() => Tokens, tokens => tokens.user)
+    tokens: Tokens
 
     @Column({ nullable: true })
     codesId: string

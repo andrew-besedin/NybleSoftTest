@@ -2,6 +2,7 @@ import { DataSource } from "typeorm";
 import User from "./entities/user-entity";
 import dotenv from "dotenv";
 import Codes from "./entities/codes-entity";
+import Tokens from "./entities/tokens-entity";
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ const AppDataSource = new DataSource({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     synchronize: true,
-    entities: [User, Codes]
+    entities: [User, Codes, Tokens]
 });
 
 AppDataSource.initialize().catch((err: Error): void => console.error(err));
