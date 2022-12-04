@@ -71,7 +71,7 @@ class AuthController {
                 from: `"NybleSoftTest Mail" <${process.env.EMAIL_USER}>`, 
                 to: req.body.email, 
                 subject: "Registation verification", 
-                html: `<b>Hello. </b><a href="http://${req.headers.host}/verify-auth?type=reg&code=${verificationCode}">Click here to verify email</a>`, 
+                html: `<b>Hello. </b><a href="http://${req.headers.host}/api/auth/verify-auth?type=reg&code=${verificationCode}">Click here to verify email</a>`, 
             });
             if (info.response.split(" ")[0] != "250") throw new Error("Message send error (SMTP code not 250)");
         } catch(err: any) {
@@ -126,7 +126,7 @@ class AuthController {
                 from: `"NybleSoftTest Mail" <${process.env.EMAIL_USER}>`, 
                 to: req.body.email, 
                 subject: "Login verification", 
-                html: `<b>Hello. </b><a href="http://${req.headers.host}/verify-auth?type=login&code=${verificationCode}">Click here to log in</a>`, 
+                html: `<b>Hello. </b><a href="http://${req.headers.host}/api/auth/verify-auth?type=login&code=${verificationCode}">Click here to log in</a>`, 
             });
             if (info.response.split(" ")[0] != "250") throw new Error("Message send error (SMTP code not 250)");
         } catch(err: any) {
