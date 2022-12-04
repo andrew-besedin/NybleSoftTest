@@ -68,6 +68,10 @@ class DataController {
                 res.send({ ok: false, message: "noSuchEmail" });
                 return;
             }
+            if ((await codesRepository.findOne({ where: { id: userRow!.codesId } }))?.registerCode) {
+                res.send({ ok: false, message: "accountNotActivated" });
+                return;
+            }
         } catch(err: any) {
             fs.appendFileSync("./error.txt", err.toString() + "\r\n");
             res.send({ ok: false, message: "dbError" });
