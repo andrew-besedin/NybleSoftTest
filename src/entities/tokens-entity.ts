@@ -6,11 +6,17 @@ export default class Tokens {
     @PrimaryGeneratedColumn({ type: "bigint" })
     id: string;
 
-    @Column()
+    @Column({ nullable: true })
     loginCode: string
+
+    @Column({ nullable: true })
+    loginTimeout: string
 
     @Column()
     token: string
+
+    @Column({ nullable: true })
+    tokenTimeout: string
 
     @ManyToOne(() => User)
     @JoinColumn()

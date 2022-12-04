@@ -9,6 +9,9 @@ export default class Codes {
     @Column({ nullable: true })
     registerCode: string
 
+    @Column({ nullable: true })
+    resgistrationTimeout: string
+
     @OneToOne(() => User)
     user: User
 }

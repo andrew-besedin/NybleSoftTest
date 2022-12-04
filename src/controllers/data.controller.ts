@@ -111,7 +111,7 @@ class DataController {
     }
 
     async changeName (req: Request, res: Response): Promise<void> {
-        if (!(req.body.token && (req.body.firstName || req.body.lastName))) {
+        if (!(req.body.token && req.body.firstName && req.body.lastName)) {
             res.send({ ok: false, message: "invalidInput" });
             return;
         }

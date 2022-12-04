@@ -15,6 +15,32 @@ const userRepository = AppDataSource.getRepository(User);
 const codesRepository = AppDataSource.getRepository(Codes);
 const tokensRepository = AppDataSource.getRepository(Tokens);
 
+const job = new CronJob("0 * * * * *", async (): Promise<void> => {
+    const tokenRows: Tokens[] | null = await tokensRepository.find();
+    tokenRows.forEach(async row => {
+        if ((Number(row.loginTimeout) < Date.now() && row.loginTimeout != "") || (Number(row.tokenTimeout) < Date.now() && row.tokenTimeout != "")) {
+            try {
+                await tokensRepository.delete({ id: row.id });
+            } catch(err: any) {
+                fs.appendFileSync("./error.txt", err.toString() + "\r\n");
+            }
+        }
+    });
+    const codeRows: Codes[] | null = await codesRepository.find();
+    codeRows.forEach(async row => {
+        if (Number(row.resgistrationTimeout) < Date.now() && row.registerCode || "") {
+            try {
+                await userRepository.delete({ codesId: row.id });
+                await codesRepository.delete({ id: row.id });
+            } catch(err: any) {
+                fs.appendFileSync("./error.txt", err.toString() + "\r\n");
+            }
+        }
+    });
+});
+
+job.start();
+
 class AuthController {
     async registerUser (req: Request, res: Response): Promise<void> {
         if (!(req.body.firstName && req.body.lastName && req.body.email)) { 
@@ -54,19 +80,7 @@ class AuthController {
             return;
         }
         try {
-            const job = new CronJob(new Date(Date.now() + 60 * 60 * 1e3), async (): Promise<void> => {
-                try {
-                    const codeRow: Codes | null = await codesRepository.findOne({ where: { registerCode: verificationCode } });
-                    if (codeRow) {
-                        await userRepository.delete({ codesId: codeRow.id });
-                        await codesRepository.delete({ id: codeRow.id });
-                    }
-                } catch(err: any) {
-                    fs.appendFileSync("./error.txt", err.toString() + "\r\n");
-                }
-            });
-            job.start();
-            await codesRepository.save({ registerCode: verificationCode });
+            await codesRepository.save({ registerCode: verificationCode, resgistrationTimeout: (Date.now() + 30 * 60 * 1e3).toString() });
             const userId: string = (await codesRepository.findOne({ where: { registerCode: verificationCode } }))!.id;
             await userRepository.save({ firstName: req.body.firstName, lastName: req.body.lastName, email: req.body.email, codesId: userId});
             res.send({ ok: true });
@@ -121,18 +135,8 @@ class AuthController {
             return;
         }
         try {
-            const dayJob = new CronJob(new Date(Date.now() + 24 * 60 * 60 * 1e3), async () => {
-                await tokensRepository.delete({ token: token });
-            });
-            dayJob.start();
-            const minuteJob = new CronJob(new Date(Date.now() + 60 * 60 * 1e3), async () => {
-                if ((await tokensRepository.findOne({ where: { token: token }}))?.loginCode) {
-                    await tokensRepository.delete({ token: token });
-                }
-            });
-            minuteJob.start();
             const userRow: User | null = await userRepository.findOne({ where: { email: req.body.email } });
-            await tokensRepository.save({ loginCode: verificationCode, token: token, userId: userRow?.id });
+            await tokensRepository.save({ loginCode: verificationCode, loginTimeout: (Date.now() + 60 * 1e3).toString(), token: token, tokenTimeout: (Date.now() + 24 * 60 * 60 * 1e3).toString(), userId: userRow?.id });
             res.send({ ok: true })
         } catch(err: any) {
             fs.appendFileSync("./error.txt", err.toString() + "\r\n");
@@ -160,7 +164,7 @@ class AuthController {
                     return;
                 }
                 res.send({ ok: true, token: tokenRow.token });
-                await tokensRepository.save({ id: tokenRow.id, loginCode: "" });
+                await tokensRepository.save({ id: tokenRow.id, loginCode: "", loginTimeout: "" });
                 return;
             }
             if (req.query.type == "reg") {
@@ -170,9 +174,9 @@ class AuthController {
                     return;
                 }
                 const token: string = makeCode(24);
-                await tokensRepository.save({ loginCode: "", token: token, userId: (await userRepository.findOne({ where: { codesId: codesRow.id } }))!.id });
+                await tokensRepository.save({ loginCode: "", loginTimeout: "", token: token, tokenTimeout: (Date.now() + 24 * 60 * 60 * 1e3).toString(), userId: (await userRepository.findOne({ where: { codesId: codesRow.id } }))!.id });
                 res.send({ ok: true, token: token });
-                await codesRepository.save({ id: codesRow.id, registerCode: "" });
+                await codesRepository.save({ id: codesRow.id, registerCode: "", resgistrationTimeout: "" });
                 return;
             }
             res.send({ ok: false, message: "invalidType" });
