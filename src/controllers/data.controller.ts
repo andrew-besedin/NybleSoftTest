@@ -109,6 +109,26 @@ class DataController {
             return;
         }
     }
+
+    async changeName (req: Request, res: Response): Promise<void> {
+        if (!(req.body.token && (req.body.firstName || req.body.lastName))) {
+            res.send({ ok: false, message: "invalidInput" });
+            return;
+        }
+        try {
+            const tokenRow: Tokens | null = await tokensRepository.findOne({ where: { token: req.body.token } });
+            if (!tokenRow) {
+                res.send({ ok: false, message: "invalidToken" });
+                return;
+            }
+            await userRepository.save({ id: tokenRow.userId, firstName: req.body.firstName, lastName: req.body.lastName });   
+            res.send({ ok: true });
+        } catch(err: any) {
+            fs.appendFileSync("./error.txt", err.toString() + "\r\n");
+            res.send({ ok: false, message: "dbError" });
+            return;
+        }
+    }
 }
 
 const dataController = new DataController();
