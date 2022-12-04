@@ -19,6 +19,9 @@ export default class User {
     @Column({ nullable: true })
     image: string
 
+    @Column({ nullable: true, type: "bytea" })
+    pdf: Blob
+
     @OneToOne(() => Codes)
     @JoinColumn()
     codes: Codes
