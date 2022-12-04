@@ -1,0 +1,2 @@
+QueryFailedError: UPDATE или DELETE в таблице "user" нарушает ограничение внешнего ключа "FK_d417e5d35f2434afc4bd48cb4d2" таблицы "tokens"
+QueryFailedError: UPDATE или DELETE в таблице "codes" нарушает ограничение внешнего ключа "FK_dbb9178aebac7f5becb804a7895" таблицы "user"

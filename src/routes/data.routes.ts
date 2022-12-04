@@ -7,5 +7,6 @@ dataRouter.post("/get-user-info", dataController.getUserInfo);
 dataRouter.put("/upload-image", dataController.uploadImage);
 dataRouter.post("/generate-pdf", dataController.generatePdf);
 dataRouter.put("/change-name", dataController.changeName);
+dataRouter.delete("/delete-user", dataController.deleteUser);
 
 export default dataRouter;

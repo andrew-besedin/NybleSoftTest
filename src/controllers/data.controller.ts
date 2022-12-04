@@ -38,7 +38,7 @@ class DataController {
     
     async uploadImage (req: Request, res: Response): Promise<void> {
         if (!(req.body.token && req.body.img)) {
-            res.send({ ok: false, message: "invalidRequest" });
+            res.send({ ok: false, message: "invalidInput" });
             return;
         }
         try {
@@ -123,6 +123,29 @@ class DataController {
             }
             await userRepository.save({ id: tokenRow.userId, firstName: req.body.firstName, lastName: req.body.lastName });   
             res.send({ ok: true });
+        } catch(err: any) {
+            fs.appendFileSync("./error.txt", err.toString() + "\r\n");
+            res.send({ ok: false, message: "dbError" });
+            return;
+        }
+    }
+
+    async deleteUser (req: Request, res: Response): Promise<void> {
+        if (!req.body.token) {
+            res.send({ ok: false, message: "invalidInput" });
+            return;
+        }
+        try {
+            const tokenRow: Tokens | null = await tokensRepository.findOne({ where: { token: req.body.token } });
+            if (!tokenRow) {
+                res.send({ ok: false, message: "invalidToken" });
+                return;
+            }
+            const userRow: User | null = await userRepository.findOne({ where: { id: tokenRow.userId } });
+            await tokensRepository.delete({ userId: userRow!.id });
+            await userRepository.delete({ id: userRow!.id });
+            await codesRepository.delete({ id: userRow!.codesId });
+            res.send({ ok: true });   
         } catch(err: any) {
             fs.appendFileSync("./error.txt", err.toString() + "\r\n");
             res.send({ ok: false, message: "dbError" });
