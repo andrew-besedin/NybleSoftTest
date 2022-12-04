@@ -33,6 +33,26 @@ class DataController {
             return;
         }
     }
+    
+    async uploadImage (req: Request, res: Response): Promise<void> {
+        if (!(req.body.token && req.body.img)) {
+            res.send({ ok: false, message: "invalidRequest" });
+            return;
+        }
+        try {
+            const tokenRow: Tokens | null = await tokensRepository.findOne({ where: { token: req.body.token } });
+            if (!tokenRow) {
+                res.send({ ok: false, message: "invalidToken" });
+                return;
+            }
+            await userRepository.save({ id: tokenRow.userId, image: req.body.img });
+            res.send({ ok: true });
+        } catch(err: any) {
+            fs.appendFileSync("./error.txt", err.toString() + "\r\n");
+            res.send({ ok: false, message: "dbError" });
+            return;
+        }
+    }
 }
 
 const dataController = new DataController();
