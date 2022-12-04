@@ -1,0 +1,12 @@
+<p></p>
+<script>
+    (async() => {
+        const answer = await fetch(`/get-auth-token?type=${new URLSearchParams(location.search).get("type")}&code=${new URLSearchParams(location.search).get("code")}`).then(res => res.json());
+    if (answer.token) { 
+        localStorage.setItem("auth_token", answer.token); 
+        document.querySelector("p").innerText = "Success";
+    } else {
+        document.querySelector("p").innerText = "Verification failed";
+    }
+    })();
+</script>

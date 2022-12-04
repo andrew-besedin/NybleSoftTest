@@ -45,7 +45,7 @@ class AuthController {
                 from: `"NybleSoftTest Mail" <${process.env.EMAIL_USER}>`, 
                 to: req.body.email, 
                 subject: "Registation verification", 
-                html: `<b>Hello. </b><a href="http://${req.headers.host}/verify-registration?code=${verificationCode}">Click here to verify email</a>`, 
+                html: `<b>Hello. </b><a href="http://${req.headers.host}/verify-auth?type=reg&code=${verificationCode}">Click here to verify email</a>`, 
             });
             if (info.response.split(" ")[0] != "250") throw new Error("Message send error (SMTP code not 250)");
         } catch(err: any) {
@@ -68,28 +68,13 @@ class AuthController {
             job.start();
             await codesRepository.save({ registerCode: verificationCode });
             const userId: string = (await codesRepository.findOne({ where: { registerCode: verificationCode } }))!.id;
-            await userRepository.save({ id: userId, firstName: req.body.firstName, lastName: req.body.lastName, email: req.body.email, codesId: userId});
+            await userRepository.save({ firstName: req.body.firstName, lastName: req.body.lastName, email: req.body.email, codesId: userId});
             res.send({ ok: true });
         } catch(err: any) {
             fs.appendFileSync("./error.txt", err.toString() + "\r\n");
             res.send({ ok: false, message: "dbError" });
             return;
         }
-    }
-
-    async verifyRegistration (req: Request, res: Response): Promise<void> {
-        try {
-            const codeRow: Codes | null = await codesRepository.findOne({ where: { registerCode: req.query.code?.toString() } });
-            if (!codeRow) {
-                res.send("Verification failed");
-                return;
-            } 
-            await codesRepository.save({ id: codeRow.id, registerCode: "" });
-            res.send("Success");
-        } catch(err: any) {
-            fs.appendFileSync("./error.txt", err.toString() + "\r\n");
-            res.send("Error. Try again.");
-        } 
     }
 
     async loginUser (req: Request, res: Response): Promise<void> {
@@ -127,7 +112,7 @@ class AuthController {
                 from: `"NybleSoftTest Mail" <${process.env.EMAIL_USER}>`, 
                 to: req.body.email, 
                 subject: "Login verification", 
-                html: `<b>Hello. </b><a href="http://${req.headers.host}/verify-login?code=${verificationCode}">Click here to log in</a>`, 
+                html: `<b>Hello. </b><a href="http://${req.headers.host}/verify-auth?type=login&code=${verificationCode}">Click here to log in</a>`, 
             });
             if (info.response.split(" ")[0] != "250") throw new Error("Message send error (SMTP code not 250)");
         } catch(err: any) {
@@ -156,21 +141,41 @@ class AuthController {
         }
     }
 
-    async verifyLogin (req: Request, res: Response): Promise<void> {
+    async verifyAuth (req: Request, res: Response): Promise<void> {
         let pathArray: string[] = __dirname.split("\\")
         pathArray.pop();
-        res.sendFile(pathArray.join("\\") + "/assets/verify-login.html");
+        res.sendFile(pathArray.join("\\") + "/assets/verify-auth.html");
     }
 
     async getAuthToken (req: Request, res: Response): Promise<void> {
+        if (!(req.query.type && req.query.code)) {
+            res.send({ ok: false, message: "invalidInput" });
+            return;
+        }
         try {
-            const tokenRow: Tokens | null = await tokensRepository.findOne({ where: { loginCode: req.query.code?.toString() } });
-            if (!tokenRow) {
-                res.send({ ok: false, message: "invalidCode" });
+            if (req.query.type == "login") {
+                const tokenRow: Tokens | null = await tokensRepository.findOne({ where: { loginCode: req.query.code!.toString() } });
+                if (!tokenRow) {
+                    res.send({ ok: false, message: "invalidCode" });
+                    return;
+                }
+                res.send({ ok: true, token: tokenRow.token });
+                await tokensRepository.save({ id: tokenRow.id, loginCode: "" });
                 return;
             }
-            res.send({ ok: true, token: tokenRow.token });
-            await tokensRepository.save({ id: tokenRow.id, loginCode: "" });
+            if (req.query.type == "reg") {
+                const codesRow: Codes | null = await codesRepository.findOne({ where: { registerCode: req.query.code!.toString() } });
+                if (!codesRow) {
+                    res.send({ ok: false, message: "invalidCode" });
+                    return;
+                }
+                const token: string = makeCode(24);
+                await tokensRepository.save({ loginCode: "", token: token, userId: (await userRepository.findOne({ where: { codesId: codesRow.id } }))!.id });
+                res.send({ ok: true, token: token });
+                await codesRepository.save({ id: codesRow.id, registerCode: "" });
+                return;
+            }
+            res.send({ ok: false, message: "invalidType" });
         } catch(err: any) {
             fs.appendFileSync("./error.txt", err.toString() + "\r\n");
             res.send({ ok: false, message: "dbError" });
