@@ -28,7 +28,7 @@ class DataController {
                 return;
             }
             const userRow: User | null = await userRepository.findOne({ where: {id: tokenRow!.userId} });
-            res.send({ ok: true, data: { firstName: userRow!.firstName, lastName: userRow!.lastName, email: userRow!.email } });
+            res.send({ ok: true, data: { firstName: userRow!.firstName, lastName: userRow!.lastName, email: userRow!.email, img: userRow?.image || "" } });
         } catch(err: any) {
             fs.appendFileSync("./error.txt", err.toString() + "\r\n");
             res.send({ ok: false, message: "dbError" });
