@@ -44,6 +44,16 @@ Data exchagning functionalities: /api/data
         {
             "token": "jfd743hHf7s2jfd743hHf7s2"
         }
+        response example:
+        {
+            "ok": true,
+            data: {
+                "firstName": "Ivan",
+                "lastName": "Ivanov",
+                "email": "ivan@mail.com",
+                "img": "data:image/png;base64,R0lGO..."
+            }
+        }
     /upload-image (PUT) - upload image request (only for authorized user)
         request body example:
         {
