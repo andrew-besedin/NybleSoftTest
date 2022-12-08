@@ -30,7 +30,7 @@ npm run start
 
 <hr></hr>
 
-<b>(POST) api/auth/register-user</b>
+<b>(POST) api/auth/register</b>
 
 Register user request (sends message to email with register comfirmation link)
 
@@ -54,7 +54,7 @@ Register user request (sends message to email with register comfirmation link)
 ```
 <hr></hr>
 
-<b>(POST) api/auth/login-user</b>
+<b>(POST) api/auth/login</b>
 
 Login user request (sends message to email with login comfirmation link)
 
@@ -84,19 +84,19 @@ Request in reference that is sent to email both while reg and login; returns HTM
 <h5>URL example</h5>
 
 ```url
-http://localhost:3000/api/auth/verify-auth?type=reg&code=jfd743hHf7s2
+http://localhost:3000/api/auth/verify?type=reg&code=jfd743hHf7s2
 ```
 
 <hr></hr>
 
-<b>(GET) api/auth/get-auth-token</b>
+<b>(GET) api/auth/token</b>
 
 Get token and to put it into client localStorage
 
 <h5>URL example</h5>
 
 ```url
-http://localhost:3000/api/auth/get-auth-token?type=reg&code=jfd743hHf7s2
+http://localhost:3000/api/auth/token?type=reg&code=jfd743hHf7s2
 ```
 
 <h5>Response example</h5>
@@ -114,7 +114,7 @@ http://localhost:3000/api/auth/get-auth-token?type=reg&code=jfd743hHf7s2
 
 <hr></hr>
 
-<b>(POST) api/data/get-user-info</b>
+<b>(POST) api/data/info</b>
 
 Get user info request (only for authorized user)
 
@@ -142,7 +142,7 @@ Get user info request (only for authorized user)
 
 <hr></hr>
 
-<b>(PUT) api/data/upload-image</b>
+<b>(PUT) api/data/image</b>
 
 Upload image request (only for authorized user)
 
@@ -166,7 +166,7 @@ Upload image request (only for authorized user)
 
 <hr></hr>
 
-<b>(POST) api/data/generate-pdf</b>
+<b>(POST) api/data/pdf</b>
 
 Generate PDF file for user by his email (for all users)
 
@@ -189,7 +189,7 @@ Generate PDF file for user by his email (for all users)
 
 <hr></hr>
 
-<b>(PUT) api/data/change-name</b>
+<b>(PUT) api/data/rename</b>
 
 Change first and last name of user (only for authorized user) 
 
@@ -214,7 +214,7 @@ Change first and last name of user (only for authorized user)
 
 <hr></hr>
 
-<b>(DELETE) api/data/delete-user</b>
+<b>(DELETE) api/data/delete</b>
 
 Detele user (only for authorized user)
 

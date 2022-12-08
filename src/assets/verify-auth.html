@@ -1,7 +1,7 @@
 <p></p>
 <script>
     (async() => {
-        const answer = await fetch(`/api/auth/get-auth-token?type=${new URLSearchParams(location.search).get("type")}&code=${new URLSearchParams(location.search).get("code")}`).then(res => res.json());
+        const answer = await fetch(`/api/auth/token?type=${new URLSearchParams(location.search).get("type")}&code=${new URLSearchParams(location.search).get("code")}`).then(res => res.json());
     if (answer.token) { 
         localStorage.setItem("auth_token", answer.token); 
         document.querySelector("p").innerText = "Success";
